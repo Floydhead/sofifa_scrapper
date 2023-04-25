@@ -17,6 +17,8 @@ def store_player_ids(players: pd.DataFrame, mode: str = 'db', header: bool=False
             #write_csv((('id'), ('name')))
         h.write_csv(players)
     else:
+        if header:
+            h.truncate_db('player_staging', 'playerids')
         h.write_db('player_staging', 'playerids', players)
     return 200
 

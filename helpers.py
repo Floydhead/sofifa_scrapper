@@ -1,6 +1,7 @@
 import csv
 import pandas as pd
 import db
+from sqlalchemy import text
 
 def write_csv(data):
     with open('playerid.csv', 'a', encoding='UTF8', newline='') as f:
@@ -21,13 +22,25 @@ def add_digits_in_string(string):
     return sum(digits)
 
 def read_db(schema: str, table: str) -> pd.DataFrame:
-    conn = db.connect_db()
-    df = pd.read_sql_table(table_name=table, schema=schema, con=conn)
-    conn.close()
+    engine = db.connect_db()
+    cursor = engine.connect()
+    df = pd.read_sql_table(table_name=table, schema=schema, con=cursor)
+    cursor.close()
     return df 
 
-def write_db(schema: str, table: str, df: pd.DataFrame) -> int:
-    conn = db.connect_db()
-    df.to_sql(name=table, schema=schema, con=conn, if_exists='append')
-    conn.close()
+def write_db(schema: str, table: str, df: pd.DataFrame, truncate: bool = True) -> int:
+    if truncate:
+        truncate_db(schema=schema, table=table)
+    engine = db.connect_db()
+    cursor = engine.connect()
+    df.to_sql(name=table, schema=schema, con=engine, if_exists='append', index=False)
+    cursor.close()
+    return 200
+
+def truncate_db(schema: str, table: str) -> int:
+    engine = db.connect_db()
+    cursor = engine.connect()
+    sql = text(f'TRUNCATE TABLE {schema}.{table}')
+    cursor.execute(sql)
+    cursor.close()
     return 200
