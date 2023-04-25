@@ -14,12 +14,8 @@ def read_csv(filename: str):
     playerids = pd.read_csv(filepath_or_buffer=filename, names=['id', 'name'])
     return playerids
     
-def add_digits_in_string(string):
-    """
-    Add the digits in a string.
-    """
-    digits = [int(digit) for digit in string.split('+')]
-    return sum(digits)
+def evaluate_string(string):
+    return eval(string)
 
 def read_db(schema: str, table: str) -> pd.DataFrame:
     engine = db.connect_db()

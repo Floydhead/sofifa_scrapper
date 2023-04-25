@@ -54,7 +54,7 @@ def get_player_attributes(soup):
             if rating.isalpha():
                 continue
             else:
-                rating = h.add_digits_in_string(rating)
+                rating = h.evaluate_string(rating)
             attributes[attribute] = rating
     
     df = pd.DataFrame([attributes])
