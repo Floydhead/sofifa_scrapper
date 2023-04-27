@@ -30,38 +30,50 @@ def read_player_ids(mode: str = 'db', filename: str = None) -> pd.DataFrame:
         playerids = h.read_db('player_staging', 'playerids')
     return playerids
 
-def get_player_attributes(soup):
+def get_player_attributes(soup, id: int):
     divs = soup.find_all('div', {'class': 'center'})
     atts = divs[5].find_all('div', {'class': 'block-quarter'})
 
-    attributes = {'Crossing': 0,'Finishing': 0,'Heading accuracy': 0,'Short passing': 0,'Volleys': 0
-                  ,'Dribbling': 0,'Curve': 0,'FK Accuracy': 0,'Long passing': 0,'Ball control': 0
-                  ,'Acceleration': 0,'Sprint speed': 0,'Agility': 0,'Reactions': 0,'Balance': 0
-                  ,'Shot power': 0,'Jumping': 0,'Stamina': 0,'Strength': 0,'Long shots': 0
+    attributes = {'player_id': id, 'Crossing': 0,'Finishing': 0,'Heading_accuracy': 0,'Short_passing': 0,'Volleys': 0
+                  ,'Dribbling': 0,'Curve': 0,'FK_Accuracy': 0,'Long_passing': 0,'Ball_control': 0
+                  ,'Acceleration': 0,'Sprint_speed': 0,'Agility': 0,'Reactions': 0,'Balance': 0
+                  ,'Shot_power': 0,'Jumping': 0,'Stamina': 0,'Strength': 0,'Long_shots': 0
                   ,'Aggression': 0,'Interceptions': 0,'Positioning': 0,'Vision': 0,'Penalties': 0
-                  ,'Composure': 0,'Defensive awareness': 0,'Standing tackle': 0,'Sliding tackle': 0
-                  ,'GK Diving': 0,'GK Handling': 0,'GK Kicking': 0,'GK Positioning': 0,'GK Reflexes':0
+                  ,'Composure': 0,'Defensive_awareness': 0,'Standing_tackle': 0,'Sliding_tackle': 0
+                  ,'GK_Diving': 0,'GK_Handling': 0,'GK_Kicking': 0,'GK_Positioning': 0,'GK_Reflexes':0
                   }
 
     for att in atts:
+        print("--------", id)
+        if not att or att.text in ['']:
+            continue
         stats = att.find('ul', {'class': 'pl'}).text
         stats = stats.split('\n')
         for stat in stats:
             if stat == '':
                 continue
             stat = stat.split(' ')
-            rating, attribute = stat[0], ' '.join(stat[1:])
+            rating, attribute = stat[0], '_'.join(stat[1:])
             if rating.isalpha():
                 continue
             else:
                 rating = h.evaluate_string(rating)
             attributes[attribute] = rating
     
-    df = pd.DataFrame([attributes])
-    print(df.head())
+    attributes = pd.DataFrame([attributes])
+    print(attributes.head(), "/n", attributes.columns)
+    store_player_attributes(attributes=attributes, id=id)
+    get_player_positions(soup=soup, id=id)
 
+def get_player_positions(soup, id: int):
+    divs = soup.find_all('div', {'class': 'center'})
     info = divs[4].find('div', {'class': 'info'})
     positions = info.find('div', {'class': 'meta ellipsis'})
     positions = positions.find_all('span')
     for position in positions:
         print(position.text)
+
+def store_player_attributes(attributes: pd.DataFrame, id: int):
+    delete = h.delete_row_in_db('player_staging', 'player_stats', 'player_id', id)
+    if delete == 200:
+        h.write_db('player_staging', 'player_stats', attributes)

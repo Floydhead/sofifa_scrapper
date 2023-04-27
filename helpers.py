@@ -40,3 +40,12 @@ def truncate_db(schema: str, table: str) -> int:
     cursor.execute(sql)
     cursor.close()
     return 200
+
+def delete_row_in_db(schema: str, table: str, column_name: str, column_value: str) -> int:
+    engine = db.connect_db()
+    cursor = engine.connect()
+    sql = text(f'DELETE FROM {schema}.{table} WHERE {column_name} = {column_value}')
+    print(sql)
+    cursor.execute(sql)
+    cursor.close()
+    return 200
