@@ -1,6 +1,7 @@
 import helpers as h
 import re
 import pandas as pd
+import regex as re
 
 def get_players_name_and_id(soup):
     table = soup.find('table', {'class': 'table table-hover persist-area'})
@@ -44,8 +45,7 @@ def get_player_attributes(soup, id: int):
                   }
 
     for att in atts:
-        print("--------", id)
-        if not att or att.text in ['']:
+        if not att or att.text in ['', '\n']:
             continue
         stats = att.find('ul', {'class': 'pl'}).text
         stats = stats.split('\n')
@@ -54,14 +54,17 @@ def get_player_attributes(soup, id: int):
                 continue
             stat = stat.split(' ')
             rating, attribute = stat[0], '_'.join(stat[1:])
-            if rating.isalpha():
-                continue
-            else:
+            pattern = r'^[+-]?\d+([+-]\d+)?$'
+            if re.match(pattern, rating):
                 rating = h.evaluate_string(rating)
+            else:
+                continue
+            if attribute in ['Marking']:
+                attribute = 'Defensive_awareness'
             attributes[attribute] = rating
     
     attributes = pd.DataFrame([attributes])
-    print(attributes.head(), "/n", attributes.columns)
+    #print(attributes.head(), "/n", attributes.columns)
     store_player_attributes(attributes=attributes, id=id)
     get_player_positions(soup=soup, id=id)
 
@@ -70,10 +73,22 @@ def get_player_positions(soup, id: int):
     info = divs[4].find('div', {'class': 'info'})
     positions = info.find('div', {'class': 'meta ellipsis'})
     positions = positions.find_all('span')
-    for position in positions:
-        print(position.text)
+    #for position in positions:
+    #    print(position.text)
 
 def store_player_attributes(attributes: pd.DataFrame, id: int):
     delete = h.delete_row_in_db('player_staging', 'player_stats', 'player_id', id)
     if delete == 200:
         h.write_db('player_staging', 'player_stats', attributes)
+
+def is_player_attributed_stored(player_id: int) -> bool:
+    player_id_db = max_player_attribute_id_stored()
+    if player_id <= player_id_db:
+        return True
+    else:
+        return False
+
+def max_player_attribute_id_stored() -> int:
+    player_id_db = h.read_db('player_staging', 'player_stats')['player_id'].to_list()
+    player_id_db = max(player_id_db) if len(player_id_db) > 0 else 0
+    return player_id_db

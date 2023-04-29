@@ -23,11 +23,20 @@ def get_player_details(id: int):
     player_attributes = pi.get_player_attributes(soup=soup, id = id)
     return player_attributes
 
+def is_player_attribute_stored(player_id: int) -> bool:
+    return pi.is_player_attributed_stored(player_id=player_id)
+
 
 if __name__ == '__main__':
     #get_player_ids()
     player_ids = read_player_ids(mode='db')
-    print(player_ids.head(), player_ids.__len__)
-    #for player_id in player_ids['player_id'].tolist()[:10]:
-    #    get_player_details(player_id)
-    get_player_details(263620)
+    #print(player_ids.head(), player_ids.__len__)
+    player_ids = player_ids['player_id'].tolist()
+    player_ids = sorted(player_ids)
+    pbar = tqdm(player_ids)
+    max_player_id = pi.max_player_attribute_id_stored()
+    for player_id in pbar:
+        pbar.set_description(f'Processing - {player_id}')
+        if player_id > max_player_id:
+            get_player_details(player_id)
+    #get_player_details(231900)
