@@ -73,8 +73,13 @@ def get_player_positions(soup, id: int):
     info = divs[4].find('div', {'class': 'info'})
     positions = info.find('div', {'class': 'meta ellipsis'})
     positions = positions.find_all('span')
-    #for position in positions:
-    #    print(position.text)
+    for position in positions:
+        print(position.text)
+        player_position_df = pd.DataFrame({'id':id, 'position': position.text})
+        store_player_attributes(player_position_df, id)
+
+def store_player_positions(position: pd.DataFrame, id: int):
+    h.write_db('player_staging', 'player_positions', position)
 
 def store_player_attributes(attributes: pd.DataFrame, id: int):
     delete = h.delete_row_in_db('player_staging', 'player_stats', 'player_id', id)
