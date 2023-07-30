@@ -28,6 +28,7 @@ def is_player_attribute_stored(player_id: int) -> bool:
 
 
 if __name__ == '__main__':
+    '''
     #get_player_ids()
     player_ids = read_player_ids(mode='db')
     #print(player_ids.head(), player_ids.__len__)
@@ -40,3 +41,6 @@ if __name__ == '__main__':
         if player_id > max_player_id:
             get_player_details(player_id)
     #get_player_details(231900)
+    '''
+    soup = sm.soup_maker(url=player_url+str(231900))
+    pi.get_player_positions(soup=soup, id=231900) 
