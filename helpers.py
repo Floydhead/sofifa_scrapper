@@ -18,23 +18,23 @@ def evaluate_string(string):
     return eval(string)
 
 def read_db(schema: str, table: str) -> pd.DataFrame:
-    engine = db.connect_db()
+    engine = db.connect_db('tidb')
     cursor = engine.connect()
     df = pd.read_sql_table(table_name=table, schema=schema, con=cursor)
     cursor.close()
     return df 
 
-def write_db(schema: str, table: str, df: pd.DataFrame, truncate: bool = True) -> int:
+def write_db(schema: str, table: str, df: pd.DataFrame, truncate: bool = False) -> int:
     if truncate:
         truncate_db(schema=schema, table=table)
-    engine = db.connect_db()
+    engine = db.connect_db('tidb')
     cursor = engine.connect()
     df.to_sql(name=table, schema=schema, con=engine, if_exists='append', index=False)
     cursor.close()
     return 200
 
 def truncate_db(schema: str, table: str) -> int:
-    engine = db.connect_db()
+    engine = db.connect_db('tidb')
     cursor = engine.connect()
     sql = text(f'TRUNCATE TABLE {schema}.{table}')
     cursor.execute(sql)
@@ -42,7 +42,7 @@ def truncate_db(schema: str, table: str) -> int:
     return 200
 
 def delete_row_in_db(schema: str, table: str, column_name: str, column_value: str) -> int:
-    engine = db.connect_db()
+    engine = db.connect_db('tidb')
     cursor = engine.connect()
     sql = text(f'DELETE FROM {schema}.{table} WHERE {column_name} = {column_value}')
     #print(sql)
@@ -50,3 +50,10 @@ def delete_row_in_db(schema: str, table: str, column_name: str, column_value: st
     cursor.commit()
     cursor.close()
     return 200
+
+def run_sql_query(query: str):
+    engine = db.connect_db('tidb')
+    cursor = engine.connect()
+    result = cursor.execute(query)
+    cursor.close()
+    return result

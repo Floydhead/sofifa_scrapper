@@ -27,11 +27,13 @@ def is_player_attribute_stored(player_id: int) -> bool:
     return pi.is_player_attributed_stored(player_id=player_id)
 
 
-if __name__ == '__main__':
+if _name_ == '__main__':
+    get_player_ids()
+
+    
+    #player_ids = read_player_ids(mode='db')
+    #print(player_ids)
     '''
-    #get_player_ids()
-    player_ids = read_player_ids(mode='db')
-    #print(player_ids.head(), player_ids.__len__)
     player_ids = player_ids['player_id'].tolist()
     player_ids = sorted(player_ids)
     pbar = tqdm(player_ids)
@@ -42,5 +44,3 @@ if __name__ == '__main__':
             get_player_details(player_id)
     #get_player_details(231900)
     '''
-    soup = sm.soup_maker(url=player_url+str(231900))
-    pi.get_player_positions(soup=soup, id=231900) 
