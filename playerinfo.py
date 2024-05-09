@@ -32,10 +32,12 @@ def read_player_ids(mode: str = 'db', filename: str = None) -> pd.DataFrame:
     else:
         #playerids = h.read_db('player_staging', 'playerids')
         playerids = h.read_db('ocm', 'playerids')
-    return playerids
+    return playerids.drop_duplicates()
 
 def get_player_attributes(soup, id: int):
     divs = soup.find_all('div', {'class': 'center'})
+    if len(divs) < 5:
+        return
     atts = divs[5].find_all('div', {'class': 'block-quarter'})
 
     attributes = {'player_id': id, 'Crossing': 0,'Finishing': 0,'Heading_accuracy': 0,'Short_passing': 0,'Volleys': 0
